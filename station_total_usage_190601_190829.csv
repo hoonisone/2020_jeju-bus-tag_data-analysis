@@ -1,4 +1,4 @@
-geton_stataion_name,geton_station_longitude,geton_station_latitude,usage
+STATION_NA,LOCAL_X,LOCAL_Y,USAGE
 제주시청(광양방면),126.53035,33.49892,247444
 제주시청(아라방면),126.52977,33.499559999999995,198512
 제주시외버스터미널,126.51478999999999,33.49946,177016
