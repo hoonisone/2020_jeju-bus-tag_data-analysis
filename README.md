@@ -1,6 +1,6 @@
 # jeju-bus-stations-clustering
 제주 버스 정류장 군집화 알고리즘s
-
+# 침략 성공!
 # flow
 1. 관광객 아이디 추출
  * input - bus_tag_data.csv 여러개
