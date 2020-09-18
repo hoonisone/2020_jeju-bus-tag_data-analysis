@@ -35,7 +35,7 @@ getoff_station_latitude = 'getoff_station_latitude'
 user_count = 'user_count' 
 
 # 전체 이용 데이터 로드
-def load_tatal_usage_data(input_path_list):
+def load_total_usage_data(input_path_list):
     usage_df = pd.read_csv(input_path_list[0], low_memory=False, encoding = "utf-8") #, dtype=dtype)
     for file_path in tqdm(input_path_list[1:]):
         temp_df = pd.read_csv(file_path, low_memory=False, encoding = "utf-8") #, dtype=dtype)
@@ -51,8 +51,23 @@ def preprocessing_missing_data_from_usage_df(usage_df):
     usage_df = usage_df[usage_df["geton_station_latitude"].notnull()]
     return usage_df
 
+   
+# load data
+def create_station_df():
+    station_df = pd.read_csv("station_list.csv", encoding = "cp949")
+    return station_df
+
+def create_cluster_df():
+    cluster_df = pd.read_csv("cluster_list.csv", encoding = "cp949")    
+    return cluster_df
+
+
+def create_user_df():
+    user_df = pd.read_csv("user_list.csv", encoding = "cp949")
+    return user_df
+                          
+# create df joining df
 def create_clustered_usage_df(usage_df, cluster_df):
-    
     # extract necessary columns
     usage_df_columns = ["user_id", "geton_station_id", "getoff_station_id"]
     usage_df = usage_df[usage_df_columns]
@@ -116,4 +131,4 @@ def create_clustered_station_df(station_df, cluster_df):
     # create clustered_station_df merging usage and location df
     clustered_station_df = pd.merge(clustered_location_df, clustered_usage_df, on=["cluster_group", "cluster_target"])
     return clustered_station_df
-    
+
