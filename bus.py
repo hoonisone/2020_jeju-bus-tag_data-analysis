@@ -36,9 +36,9 @@ user_count = 'user_count'
 
 # 전체 이용 데이터 로드
 def load_total_usage_data(input_path_list):
-    usage_df = pd.read_csv(input_path_list[0], low_memory=False, encoding = "utf-8") #, dtype=dtype)
+    usage_df = pd.read_csv(input_path_list[0], low_memory=False, encoding = "cp949") #, dtype=dtype)
     for file_path in tqdm(input_path_list[1:]):
-        temp_df = pd.read_csv(file_path, low_memory=False, encoding = "utf-8") #, dtype=dtype)
+        temp_df = pd.read_csv(file_path, low_memory=False, encoding = "cp949") #, dtype=dtype)
         usage_df = pd.concat([usage_df, temp_df], sort=False, ignore_index=True)
         
     return usage_df
