@@ -41,15 +41,22 @@ def load_total_usage_data(input_path_list):
         temp_df = pd.read_csv(file_path, low_memory=False, encoding = "cp949") #, dtype=dtype)
         usage_df = pd.concat([usage_df, temp_df], sort=False, ignore_index=True)
         
+    usage_df = usage_df[usage_df["geton_station_longitude"].notnull()]
+    usage_df = usage_df[usage_df["geton_station_latitude"].notnull()]
+    
+    # datetime64로 형 변환 # M[base_date] = pd.to_datetime(M[base_date], format='%Y%m%d')
+    usage_df[geton_datetime] = pd.to_datetime(usage_df[geton_datetime], format='%Y%m%d%H%M%S')
+    usage_df[getoff_datetime] = pd.to_datetime(usage_df[getoff_datetime], format='%Y%m%d%H%M%S')
+    
     return usage_df
 
 def insert_tourist_column(usage_df, user_df):
     return pd.merge(usage_df, user_df, on = "user_id")
 
-def preprocessing_missing_data_from_usage_df(usage_df):
-    usage_df = usage_df[usage_df["geton_station_longitude"].notnull()]
-    usage_df = usage_df[usage_df["geton_station_latitude"].notnull()]
-    return usage_df
+# def preprocessing_missing_data_from_usage_df(usage_df):
+#     usage_df = usage_df[usage_df["geton_station_longitude"].notnull()]
+#     usage_df = usage_df[usage_df["geton_station_latitude"].notnull()]
+#     return usage_df
 
    
 # load data
