@@ -12,7 +12,7 @@ import xml.etree.ElementTree as elemTree
 
 # 입력 파일 패쓰 리스트 생성
 def make_input_path(start_date, end_date):
-    root_path = "C:/tb_bus_user_usage"
+    root_path = "D:/Users/workspace/2.jeju-bus-stations-clustering_MH/data/usage"
     base_name = "tb_bus_user_usage_"
     extender = ".csv"
     path_list = []
@@ -301,10 +301,10 @@ def analyze_station_usage(station_df, usage_df, user_df):
     regident_usage_df = merged_df[merged_df['tourist'] == False]
     
     tourist_geton_df = pd.DataFrame(tourist_usage_df["geton_station_id"].value_counts()).reset_index().rename(columns = {"index":"station_id", "geton_station_id":"tour_geton_usage"})
-    regident_geton_df = pd.DataFrame(tourist_usage_df["geton_station_id"].value_counts()).reset_index().rename(columns = {"index":"station_id", "geton_station_id":"regident_geton_usage"})
+    regident_geton_df = pd.DataFrame(regident_usage_df["geton_station_id"].value_counts()).reset_index().rename(columns = {"index":"station_id", "geton_station_id":"regident_geton_usage"})
     
     tourist_getoff_df = pd.DataFrame(tourist_usage_df["getoff_station_id"].value_counts()).reset_index().rename(columns = {"index":"station_id", "getoff_station_id":"tour_getoff_usage"})
-    regident_getoff_df = pd.DataFrame(tourist_usage_df["getoff_station_id"].value_counts()).reset_index().rename(columns = {"index":"station_id", "getoff_station_id":"regident_getoff_usage"})
+    regident_getoff_df = pd.DataFrame(regident_usage_df["getoff_station_id"].value_counts()).reset_index().rename(columns = {"index":"station_id", "getoff_station_id":"regident_getoff_usage"})
 
 
     station_df = pd.merge(station_df, tourist_geton_df, on="station_id", how="outer").fillna(0)
@@ -488,16 +488,16 @@ def show_od_pattern(user_df, usage_df, num):
 
 # load data
 def load_station_df():
-    station_df = pd.read_csv("data/station_df.csv", encoding = "cp949")
+    station_df = pd.read_csv("data/analysis/station_df.csv", encoding = "cp949")
     return station_df
 
 def load_cluster_df():
-    cluster_df = pd.read_csv("data/cluster_df.csv", encoding = "cp949")    
+    cluster_df = pd.read_csv("data/analysis/cluster_df.csv", encoding = "cp949")    
     return cluster_df
 
 
 def load_user_df():
-    user_df = pd.read_csv("data/user_df.csv", encoding = "cp949")
+    user_df = pd.read_csv("data/analysis/user_df.csv", encoding = "cp949")
     return user_df
                           
 # create df joining df
