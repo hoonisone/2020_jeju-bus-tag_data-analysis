@@ -4,6 +4,9 @@ from tqdm import tqdm
 from pyarrow import csv
 
 # 입력 파일 패쓰 리스트 생성
+def test(a):
+    return a+1
+
 def make_input_path(start_date, end_date):
     root_path = "C:/tb_bus_user_usage"
     base_name = "tb_bus_user_usage_"
@@ -61,16 +64,16 @@ def insert_tourist_column(usage_df, user_df):
    
 # load data
 def create_station_df():
-    station_df = pd.read_csv("station_list.csv", encoding = "cp949")
+    station_df = pd.read_csv("data/station_list.csv", encoding = "cp949")
     return station_df
 
 def create_cluster_df():
-    cluster_df = pd.read_csv("cluster_list.csv", encoding = "cp949")    
+    cluster_df = pd.read_csv("data/cluster_list.csv", encoding = "cp949")    
     return cluster_df
 
 
 def create_user_df():
-    user_df = pd.read_csv("user_list.csv", encoding = "cp949")
+    user_df = pd.read_csv("data/user_df.csv", encoding = "cp949")
     return user_df
                           
 # create df joining df
