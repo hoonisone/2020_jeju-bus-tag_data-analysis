@@ -12,7 +12,7 @@ import xml.etree.ElementTree as elemTree
 
 # 입력 파일 패쓰 리스트 생성
 def make_input_path(start_date, end_date):
-    root_path = "D:/Users/workspace/jeju-bus-stations-clustering_MH/data/usage"
+    root_path = "D:/workspace/Bus Project/data/usage"
     base_name = "tb_bus_user_usage_"
     extender = ".csv"
     path_list = []
