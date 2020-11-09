@@ -12,7 +12,7 @@ import xml.etree.ElementTree as elemTree
 
 # 입력 파일 패쓰 리스트 생성
 def make_input_path(start_date, end_date):
-    root_path = "D:/Users/workspace/2.jeju-bus-stations-clustering_MH/data/usage"
+    root_path = "D:/Users/workspace/jeju-bus-stations-clustering_MH/data/usage"
     base_name = "tb_bus_user_usage_"
     extender = ".csv"
     path_list = []
@@ -499,7 +499,11 @@ def load_cluster_df():
 def load_user_df():
     user_df = pd.read_csv("data/analysis/user_df.csv", encoding = "cp949")
     return user_df
-                          
+
+def load_clusterd_station_df():
+    user_df = pd.read_csv("data/analysis/clustered_station_df.csv", encoding = "cp949")
+    return user_df
+
 # create df joining df
 def create_clustered_usage_df(usage_df, cluster_df):
     # extract necessary columns
@@ -534,34 +538,3 @@ def create_clustered_usage_df(usage_df, cluster_df):
                                                   "getoff_station_id", "getoff_cluster_group", "getoff_cluster_target",
                                                   "getoff_cluster_x", "getoff_cluster_y"])
     return result
-
-def create_clustered_station_df(station_df, cluster_df):
-    # extract necessary columns in station_df
-    station_df_columns = ["station_id",
-                          "citizen_user_count", "tourist_user_count", "total_user_count",
-                          "citizen_tag_count", "tourist_tag_count", "total_tag_count"]    
-    station_df = station_df[station_df_columns]
-
-    
-    # extract necessary columns in cluster_df
-    cluster_df_columns = ["cluster_group", "cluster_target", "station_id", "cluster_x", "cluster_y"]
-    cluster_df = cluster_df[cluster_df_columns]
-
-    
-    # merging station and cluster
-    merged_df = pd.merge(station_df, cluster_df, on="station_id")   
-    
-    
-    # create clustered_location_df from merged_df
-    clustered_location_df_columns = ["cluster_group", "cluster_target", "cluster_x", "cluster_y"]
-    clustered_location_df = merged_df[clustered_location_df_columns].drop_duplicates(clustered_location_df_columns)
-    
-    
-    # create clustered_usage_df
-    clustered_usage_df = merged_df.drop(["station_id", "cluster_x", "cluster_y"], axis = 1)
-    clustered_usage_df = clustered_usage_df.groupby(["cluster_group", "cluster_target"]).sum()
-    
-    
-    # create clustered_station_df merging usage and location df
-    clustered_station_df = pd.merge(clustered_location_df, clustered_usage_df, on=["cluster_group", "cluster_target"])
-    return clustered_station_df
