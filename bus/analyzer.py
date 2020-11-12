@@ -487,6 +487,10 @@ def show_od_pattern(user_df, usage_df, num):
     return od_df[select]
 
 # load data
+def load_user_df():
+    user_df = pd.read_csv("data/analysis/user_df.csv", encoding = "cp949")
+    return user_df
+
 def load_station_df():
     station_df = pd.read_csv("data/analysis/station_df.csv", encoding = "cp949")
     return station_df
@@ -495,13 +499,8 @@ def load_cluster_df():
     cluster_df = pd.read_csv("data/analysis/cluster_df.csv", encoding = "cp949")    
     return cluster_df
 
-
-def load_user_df():
-    user_df = pd.read_csv("data/analysis/user_df.csv", encoding = "cp949")
-    return user_df
-
-def load_clusterd_station_df():
-    user_df = pd.read_csv("data/analysis/clustered_station_df.csv", encoding = "cp949")
+def load_cluster_station_df():
+    user_df = pd.read_csv("data/analysis/cluster_station_df.csv", encoding = "cp949")
     return user_df
 
 # create df joining df
