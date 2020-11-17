@@ -9,10 +9,19 @@ from pyarrow import csv
 from matplotlib import pyplot as plt
 from sklearn.cluster import DBSCAN
 import xml.etree.ElementTree as elemTree
+from multiprocessing import Pool
+
+def parallelize(func, df, core = 8):
+    df_split = np.array_split(df, core)
+    pool = Pool(core)
+    df = pd.concat(pool.map(func, df_split))
+    pool.close()
+    pool.join()
+    return df
 
 # 입력 파일 패쓰 리스트 생성
 def make_input_path(start_date, end_date):
-    root_path = "D:/workspace/Bus Project/data/usage"
+    root_path = "C:/workspace/Bus Project/data/usage"
     base_name = "tb_bus_user_usage_"
     extender = ".csv"
     path_list = []
@@ -42,7 +51,7 @@ getoff_station_latitude = 'getoff_station_latitude'
 user_count = 'user_count' 
 
 # 전체 이용 데이터 로드
-def load_total_usage_data(input_path_list):
+def load_total_usage_df(input_path_list):
     usage_df = pd.read_csv(input_path_list[0], low_memory=False, encoding = "cp949") #, dtype=dtype)
     for file_path in tqdm(input_path_list[1:]):
         temp_df = pd.read_csv(file_path, low_memory=False, encoding = "cp949") #, dtype=dtype)
@@ -54,14 +63,17 @@ def load_total_usage_data(input_path_list):
     # datetime64로 형 변환 # M[base_date] = pd.to_datetime(M[base_date], format='%Y%m%d')
     usage_df[geton_datetime] = pd.to_datetime(usage_df[geton_datetime], format='%Y%m%d%H%M%S')
     usage_df[getoff_datetime] = pd.to_datetime(usage_df[getoff_datetime], format='%Y%m%d%H%M%S')
-    
     return usage_df
 
+def parallel_load_total_usage_df(input_path_list, core = 8):
+    return parallelize(load_total_usage_df, input_path_list, core)
+    
 # 정류장 추출
 def analyze_usage(usage_df):
     usage_df = usage_df[["geton_station_id", "user_count"]].groupby("geton_station_id").sum()
     usage_df.index.name = "geton_station_id"
     usage_df = usage_df.rename(columns={"user_count":"usage"})
+    
     return usage_df
 
 def create_station_df(usage_df):
@@ -170,6 +182,9 @@ def analyze_usage_ratio(user_df):
     user_df['usage_ratio'] = user_df['usage_ratio'].apply(lambda x : int(x*100))
     return user_df
 
+def parallel_analyze_usage_ratio(user_df, core=8):
+    return parallelize(analyze_usage_ratio, user_df, core)
+
 # 첫 승차 정류장과 마지막 하차 정류장 분석
 def analyze_start_end(user_df, usage_df):
     grouped = usage_df.sort_values(['geton_datetime']).groupby(by=["user_id"], as_index=False)
@@ -266,6 +281,9 @@ def analyze_case(user_df):
     user_df = pd.concat(cases)
     return user_df
 
+def parallel_analyze_case(user_df, core=8):
+    return parallelize(analyze_case, user_df, core)
+
 def extract_tourist(user_df, case, period, usage_ratio):
     select = user_df.columns
     
@@ -291,6 +309,9 @@ def analyze_tourist(user_df):
     user_df['tourist'] = user_df["user_id"].apply(lambda x : True if x in tourist_id_list else False)
     
     return user_df
+
+def parallel_analyze_tourist(user_df, core=8):
+    return parallelize(analyze_tourist, user_df, core)
 
 # 정류장 분석
 def analyze_station_usage(station_df, usage_df, user_df):
