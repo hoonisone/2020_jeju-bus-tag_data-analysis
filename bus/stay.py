@@ -77,3 +77,20 @@ def set_position_columns(usage_df, cluster_df):
     usage_df = pd.merge(usage_df, geton_cluster_df, on="geton_cluster_id")
     usage_df = pd.merge(usage_df, getoff_cluster_df, on="getoff_cluster_id")
     return usage_df
+
+def set_dist(cluster_df, x1, y1, x2, y2, longitude = "cluster_longitude", latitude = "cluster_latitude"):
+    selector = list(cluster_df.columns)
+    cluster_df['dist1_x'] = (cluster_df[longitude] - x1)**2
+    cluster_df['dist1_y'] = (cluster_df[latitude] - y1)**2
+    cluster_df['dist2_x'] = (cluster_df[longitude] - x2)**2
+    cluster_df['dist2_y'] = (cluster_df[latitude] - y2)**2
+
+    cluster_df['dist1'] = (cluster_df['dist1_x'] + cluster_df['dist1_y'])**(1/2)
+    cluster_df['dist2'] = (cluster_df['dist2_x'] + cluster_df['dist2_y'])**(1/2)
+    cluster_df['dist'] = cluster_df['dist1'] + cluster_df['dist2']
+    cluster_df['dist'] = cluster_df['dist']*6500000/360
+    cluster_df['dist'] = cluster_df['dist'].apply(lambda x : int(x))
+    selector.append("dist")
+    cluster_df = cluster_df[selector]
+    cluster_df = cluster_df.sort_values(by="dist")
+    return cluster_df
