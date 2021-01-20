@@ -253,42 +253,11 @@ def analyze_tour_station_visit(user_df, usage_df, tour_station_df):
     user_df = pd.merge(user_df, tour_visit_df[["tour_visit"]], on="user_id", how="outer").fillna(0)
     return user_df
 
-def analyze_case(user_df):
-    cases = []
-    
-    # 공항 이용 유형 고려
-    both = user_df[user_df["both"]]
-    first = user_df[user_df["first"]]
-    last = user_df[user_df["last"]]
-    neither = user_df[user_df["neither"]]
-    
-    # 관광 정류장 방문횟수 고려
-    cases.append(both[both["tour_visit"] >= 1])
-    cases.append(both[both["tour_visit"] <  1])
-    
-    cases.append(first[first["tour_visit"] >= 3])
-    cases.append(first[first["tour_visit"] <  3])
-    
-    cases.append(last[last["tour_visit"] >= 3])
-    cases.append(last[last["tour_visit"] <  3])
-    
-    cases.append(neither[neither["tour_visit"] >= 4])
-    cases.append(neither[neither["tour_visit"] <  4])
-    
-    for i in range(0, 8):
-        cases[i]["case"] = i+1
-    
-    user_df = pd.concat(cases)
-    return user_df
-
-def parallel_analyze_case(user_df, core=8):
-    return parallelize(analyze_case, user_df, core)
-
 def extract_tourist(user_df, case, period, usage_ratio):
     select = user_df.columns
     
     # 케이스 추출
-    user_df = user_df[user_df["case"] == case]
+    user_df = user_df[user_df[case] == True]
     # 이용 기간 고려
     user_df = user_df[(period[0] <= user_df["period"]) & (user_df["period"] <= period[1])]
     # 이용 비율 고려
@@ -296,13 +265,12 @@ def extract_tourist(user_df, case, period, usage_ratio):
     return user_df
 
 def analyze_tourist(user_df):
+    case_list = ["both", "first", "last", "neither"]
     tourist_df_list = []
-    tourist_df_list.append(extract_tourist(user_df, 1, (2, 15), 60))
-    tourist_df_list.append(extract_tourist(user_df, 2, (2, 15), 70))
-    tourist_df_list.append(extract_tourist(user_df, 3, (2, 15), 70))
-    tourist_df_list.append(extract_tourist(user_df, 5, (2, 15), 80))
-    tourist_df_list.append(extract_tourist(user_df, 7, (2, 15), 90))
     
+    for case in case_list:
+        tourist_df_list.append(extract_tourist(user_df, case, (2, 15), 60))
+
     tourist_df = pd.concat(tourist_df_list)
     tourist_id_list = list(tourist_df["user_id"])
     
