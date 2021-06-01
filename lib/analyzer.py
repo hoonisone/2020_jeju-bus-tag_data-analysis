@@ -3,39 +3,13 @@ import datetime
 import requests
 import numpy as np
 import pandas as pd
-import multiprocessing
+import lib.work as WORK
 from tqdm import tqdm
 from pyarrow import csv
 from matplotlib import pyplot as plt
 from sklearn.cluster import DBSCAN
 import xml.etree.ElementTree as elemTree
 from multiprocessing import Pool
-
-def parallelize(func, df, core = 8):
-    df_split = np.array_split(df, core)
-    pool = Pool(core)
-    df = pd.concat(pool.map(func, df_split))
-    pool.close()
-    pool.join()
-    return df
-
-# 입력 파일 패쓰 리스트 생성
-def make_input_path(start_date, end_date):
-    root_path = "C:/workspace/Bus Project/data/usage"
-    base_name = "tb_bus_user_usage_"
-    extender = ".csv"
-    path_list = []
-    
-    for day in range((end_date-start_date).days+1):
-        date = start_date + datetime.timedelta(days = day)
-        date = str(date)
-        y = date[2:4]
-        m = date[5:7]
-        d = date[8:10]
-        file_path = root_path+"/"+base_name+y+m+d+extender
-        path_list.append(file_path)
-        
-    return path_list
 
 # 컬럼 정리
 user_id = 'user_id'
@@ -49,64 +23,14 @@ getoff_station_name = 'getoff_station_name'
 getoff_station_longitude = 'getoff_station_longitude'
 getoff_station_latitude = 'getoff_station_latitude'
 user_count = 'user_count' 
-
-# 전체 이용 데이터 로드
-def load_total_usage_df(input_path_list):
-    usage_df = pd.read_csv(input_path_list[0], low_memory=False, encoding = "cp949") #, dtype=dtype)
-    for file_path in tqdm(input_path_list[1:]):
-        temp_df = pd.read_csv(file_path, low_memory=False, encoding = "cp949") #, dtype=dtype)
-        usage_df = pd.concat([usage_df, temp_df], sort=False, ignore_index=True)
-        
-    usage_df = usage_df[usage_df["geton_station_longitude"].notnull()]
-    usage_df = usage_df[usage_df["geton_station_latitude"].notnull()]
-    
-    # datetime64로 형 변환 # M[base_date] = pd.to_datetime(M[base_date], format='%Y%m%d')
-    usage_df[geton_datetime] = pd.to_datetime(usage_df[geton_datetime], format='%Y%m%d%H%M%S')
-    usage_df[getoff_datetime] = pd.to_datetime(usage_df[getoff_datetime], format='%Y%m%d%H%M%S')
-    return usage_df
-
-def parallel_load_total_usage_df(input_path_list, core = 8):
-    return parallelize(load_total_usage_df, input_path_list, core)
     
 # 정류장 추출
 def analyze_usage(usage_df):
     usage_df = usage_df[["geton_station_id", "user_count"]].groupby("geton_station_id").sum()
     usage_df.index.name = "geton_station_id"
     usage_df = usage_df.rename(columns={"user_count":"usage"})
-    
     return usage_df
 
-def create_station_df(usage_df):
-    geton_station_columns = ['geton_station_id', 'geton_stataion_name', 'geton_station_longitude', 'geton_station_latitude']
-    getoff_station_columns = ['getoff_station_id', 'getoff_station_name', 'getoff_station_longitude', 'getoff_station_latitude']
-    
-    station_columns = ['station_id', 'station_name', 'station_longitude', 'station_latitude']
-    
-    geton_rename_dict = {}
-    getoff_rename_dict = {}
-    for i, column in enumerate(station_columns):
-        geton_rename_dict[geton_station_columns[i]] = column
-        getoff_rename_dict[getoff_station_columns[i]] = column
-    
-    geton_station_df = usage_df[geton_station_columns].drop_duplicates().rename(columns = geton_rename_dict)
-    getoff_station_df = usage_df[getoff_station_columns].drop_duplicates().rename(columns = getoff_rename_dict)
-    
-    station_df = pd.concat([geton_station_df, getoff_station_df]).drop_duplicates()
-    station_id_df = station_df[['station_id']].drop_duplicates()
-    station_df = pd.merge(station_id_df, station_df, how ='right')
-    
-    station_df = station_df.dropna()
-    
-    # 예외처리 - 하나의 id에 대하여 여러 경도, 위도 존재
-    id_count_df = pd.DataFrame(station_df['station_id'].value_counts()).reset_index().rename(columns = {'index':'station_id', 'station_id':'count'})
-    exception_df = id_count_df[id_count_df['count'] >1]
-    exception_id_list = list(exception_df['station_id'])
-    for exception_id in exception_id_list:
-        temp_df = station_df[station_df['station_id'] == exception_id]
-        station_df = station_df[station_df['station_id'] != exception_id]
-        station_df = pd.concat([station_df, temp_df.head(1)])
-    ######################################################################                            
-    return station_df
 
 # 정류장 주소 추가
 def get_address(loc_x, loc_y, min_x = 126.531891, min_y = 33.399409, key = "E20F6493-C13D-3F6F-AC90-D5BB2F239901"):
@@ -183,7 +107,7 @@ def analyze_usage_ratio(user_df):
     return user_df
 
 def parallel_analyze_usage_ratio(user_df, core=8):
-    return parallelize(analyze_usage_ratio, user_df, core)
+    return WORK.parallelize(analyze_usage_ratio, user_df, core)
 
 # 첫 승차 정류장과 마지막 하차 정류장 분석
 def analyze_start_end(user_df, usage_df):
@@ -279,7 +203,7 @@ def analyze_tourist(user_df):
     return user_df
 
 def parallel_analyze_tourist(user_df, core=8):
-    return parallelize(analyze_tourist, user_df, core)
+    return WORK.parallelize(analyze_tourist, user_df, core)
 
 # 정류장 분석
 def analyze_station_usage(station_df, usage_df, user_df):
